@@ -10,6 +10,6 @@ public class CreateRideFromDemandDto {
     private String source;
     private String destination;
     private VehicleType vehicleType;
-    private LocalDateTime preferredTime; // Captured from the dashboard group row card
-    private Integer totalSeats;          // Vehicle maximum capacity
+    private LocalDateTime preferredTime;
+    private Integer totalSeats;
 }

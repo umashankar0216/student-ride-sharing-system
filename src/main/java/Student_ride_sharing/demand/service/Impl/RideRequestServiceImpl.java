@@ -71,21 +71,17 @@ public class RideRequestServiceImpl implements RideRequestService {
 
     @Override
     public RideRequestDto createRequest(RideRequestDto dto) {
-        // 1. 🟢 Extract the authenticated username from the JWT session token
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        // 2. 🟢 Fetch the full User entity records from Supabase using that username
         User student = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Logged in student record not found"));
 
-        // Convert DTO to Entity
         RideRequest request = modelMapper.map(dto, RideRequest.class);
         request.setStudent(student);
         request.setStatus(RequestStatus.PENDING);
 
         RideRequest savedRequest = rideRequestRepository.save(request);
 
-        // Return mapped DTO
         return modelMapper.map(savedRequest, RideRequestDto.class);
     }
 

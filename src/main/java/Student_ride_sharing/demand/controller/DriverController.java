@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/drivers")
-@CrossOrigin(origins = "*") // Allows your React frontend to communicate with this API
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class DriverController {
 

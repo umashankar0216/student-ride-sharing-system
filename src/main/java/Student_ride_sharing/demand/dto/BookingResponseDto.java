@@ -10,9 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingResponseDto {
     private Long id;
-    private BookingStatus status; // CONFIRMED or CANCELLED [cite: 1228]
+    private BookingStatus status;
 
-    // Nested objects to return clean, filtered student and ride details
     private UserResponseDto user;
     private RideResponseDto ride;
 }

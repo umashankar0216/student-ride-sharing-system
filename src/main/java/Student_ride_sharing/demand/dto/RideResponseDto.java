@@ -14,8 +14,8 @@ public class RideResponseDto {
     private String source;
     private String destination;
     private LocalDateTime departureTime;
-    private Integer totalSeats;   // Initial maximum capacity of the vehicle
-    private Integer occupiedSeats;   // Number of students currently booked
-    private Integer availableSeats;  // Remaining open spots left in the vehicle
+    private Integer totalSeats;
+    private Integer occupiedSeats;
+    private Integer availableSeats;
     private VehicleType vehicleType;
 }

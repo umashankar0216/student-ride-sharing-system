@@ -47,7 +47,6 @@ public interface RideRequestRepository extends JpaRepository<RideRequest, Long> 
             @Param("targetTime") LocalDateTime targetTime
     );
 
-    // 3. Loop-free single row lookup utility for driver trip cancellations rollback logic
     RideRequest findByStudentIdAndSourceAndDestinationAndStatus(
             Long studentId,
             String source,

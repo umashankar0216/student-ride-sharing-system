@@ -24,7 +24,6 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
-    // 1. Individual Manual Student Booking (Kept exactly as you wrote it)
     @Override
     @Transactional
     public BookingResponseDto createBooking(Long studentId, Long rideId) {
@@ -55,7 +54,6 @@ public class BookingServiceImpl implements BookingService {
         return response;
     }
 
-    // 2. New Overloaded Method: Handles automated ticket generation for driver demand clusters safely
     @Override
     @Transactional
     public void createAutomatedBookingForCluster(Long studentId, Ride ride) {

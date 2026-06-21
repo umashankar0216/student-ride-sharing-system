@@ -19,49 +19,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
 
-    // Fixed constructor signature to cleanly match injection
+
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService){
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
     }
 
-    // 🔥 CRUCIAL FIX: Prevents this filter from executing on H2 Console traffic paths
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         return path.startsWith("/h2-console") || path.startsWith("/favicon.ico");
     }
 
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request,
-//                                    HttpServletResponse response,
-//                                    FilterChain filterChain)
-//            throws ServletException, IOException {
-//
-//        String header = request.getHeader("Authorization");
-//        String token = null;
-//        String username = null;
-//
-//        if (header != null && header.startsWith("Bearer ")) {
-//            token = header.substring(7);
-//        }
-//
-//        if (token != null && jwtTokenProvider.validateToken(token)) {
-//            username = jwtTokenProvider.getUserNameFromToken(token);
-//            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-//
-//            UsernamePasswordAuthenticationToken authentication =
-//                    new UsernamePasswordAuthenticationToken(
-//                            userDetails,
-//                            null,
-//                            userDetails.getAuthorities()
-//                    );
-//
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//        }
-//
-//        filterChain.doFilter(request, response);
-//    }
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -69,7 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
-        System.out.println("DEBUG 1: Authorization Header received: " + header); // 🔍 CHECK THIS
 
         String token = null;
         String username = null;
@@ -80,10 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
             username = jwtTokenProvider.getUserNameFromToken(token);
-            System.out.println("DEBUG 2: Token valid. Username parsed: " + username); // 🔍 CHECK THIS
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            System.out.println("DEBUG 3: Loaded user authorities from DB: " + userDetails.getAuthorities()); // 🔍 CHECK THIS
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(

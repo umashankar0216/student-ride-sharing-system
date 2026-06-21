@@ -9,6 +9,6 @@ public class RideRequestDto {
     private Long userId;
     private String source;
     private String destination;
-    private LocalDateTime preferredTime; // 🟢 Matches entity field exactly!
+    private LocalDateTime preferredTime;
     private VehicleType preferredVehicle;
 }

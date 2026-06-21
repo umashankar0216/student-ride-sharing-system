@@ -15,7 +15,7 @@ public class JwtTokenProvider {
     @Value("${app.jwt-secret}")
     private String secretKey;
 
-    // Fixed the typo here: changed 'jet' to 'jwt'
+
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationMilliseconds;
 
