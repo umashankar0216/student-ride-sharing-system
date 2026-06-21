@@ -1,4 +1,3 @@
-
 package Student_ride_sharing.demand.dto;
 
 import Student_ride_sharing.demand.entity.VehicleType;
@@ -10,6 +9,6 @@ public class RideRequestDto {
     private Long userId;
     private String source;
     private String destination;
-    private LocalDateTime time;
+    private LocalDateTime preferredTime; // 🟢 Matches entity field exactly!
     private VehicleType preferredVehicle;
 }

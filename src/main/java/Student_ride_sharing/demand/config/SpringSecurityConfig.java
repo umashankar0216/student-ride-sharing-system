@@ -38,10 +38,9 @@ public class SpringSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
                     // Permit ALL requests to the console root and any sub-resource files (css, js, etc.)
-                    auth.requestMatchers("/h2-console/**").permitAll();
                     auth.requestMatchers("/api/auth/**").permitAll();
 
-                    auth.requestMatchers("/api/students/**").hasRole("STUDENT");
+                    auth.requestMatchers("/api/students/**").permitAll();
                     auth.requestMatchers("/api/drivers/**").hasRole("DRIVER");
                     auth.anyRequest().authenticated();
                 })

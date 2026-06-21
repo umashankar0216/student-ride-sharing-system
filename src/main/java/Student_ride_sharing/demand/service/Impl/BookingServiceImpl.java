@@ -48,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
 
         BookingResponseDto response = modelMapper.map(savedBooking, BookingResponseDto.class);
-        response.getRide().setTotalCapacity(updatedRide.getTotalSeats());
+        response.getRide().setTotalSeats(updatedRide.getTotalSeats());
         response.getRide().setOccupiedSeats(updatedRide.getOccupiedSeats());
         response.getRide().setAvailableSeats(updatedRide.getTotalSeats() - updatedRide.getOccupiedSeats());
 

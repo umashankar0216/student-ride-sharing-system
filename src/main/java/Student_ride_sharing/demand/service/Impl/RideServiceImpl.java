@@ -11,6 +11,7 @@ import Student_ride_sharing.demand.service.BookingService;
 import Student_ride_sharing.demand.service.RideService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder; // 🟢 IMPORT THIS
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,16 +41,19 @@ public class RideServiceImpl implements RideService {
                 dto.getPreferredTime()
         );
 
-        // Fetch driver entity from database to establish relational integrity checks
-        User driver = userRepository.findById(dto.getDriverId())
-                .orElseThrow(() -> new RuntimeException("Driver profile not found"));
+        // 🟢 FIX: Extract the authenticated driver's username from the JWT token session context
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 🟢 FIX: Fetch driver entity dynamically using the principal username instead of the null DTO ID
+        User driver = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("Authenticated driver profile record not found"));
 
         Ride ride = new Ride();
-        ride.setDriver(driver); // Now fully bound cleanly from the database entity mapping
+        ride.setDriver(driver); // Fully bound cleanly from the database entity mapping context
         ride.setSource(dto.getSource());
         ride.setDestination(dto.getDestination());
         ride.setVehicleType(dto.getVehicleType());
-        ride.setDepartureTime(LocalDateTime.now());
+        ride.setDepartureTime(dto.getPreferredTime());
         ride.setTotalSeats(dto.getTotalSeats());
         ride.setOccupiedSeats(0);
 
@@ -94,11 +98,7 @@ public class RideServiceImpl implements RideService {
 
         // 3. Process the domino-effect rollback loop
         for (Booking booking : activeBookings) {
-            // A. Flip the student's confirmation ticket to CANCELLED
-            booking.setStatus(BookingStatus.CANCELLED);
-            bookingRepository.save(booking);
-
-            // B. Revert the student's original demand request back to PENDING loop-free
+            // A. Revert the student's original demand request back to PENDING loop-free
             User student = booking.getStudent();
 
             RideRequest fulfilledRequest = rideRequestRepository
@@ -109,11 +109,14 @@ public class RideServiceImpl implements RideService {
                             RequestStatus.FULFILLED
                     );
 
-            // Re-inject them back into the active FCFS dashboard pool instantly if found
+            // Re-inject them back into the active pool instantly if found
             if (fulfilledRequest != null) {
                 fulfilledRequest.setStatus(RequestStatus.PENDING);
                 rideRequestRepository.save(fulfilledRequest);
             }
+
+            // B. 🟢 FIX: Delete the booking record completely since its parent Ride is being destroyed
+            bookingRepository.delete(booking);
         }
 
         // 4. HARD DELETE THE RIDE ROW COMPLETELY

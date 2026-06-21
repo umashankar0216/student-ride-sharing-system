@@ -18,6 +18,7 @@ public class StudentController {
     private final BookingService bookingService;
 
     // 1. Submit a new ride request to the demand pool
+
     @PostMapping("/requests")
     public ResponseEntity<RideRequestDto> createRideRequest(@RequestBody RideRequestDto dto) {
         RideRequestDto response = rideRequestService.createRequest(dto);
