@@ -1,4 +1,4 @@
-package todo.example.demo.Controller;
+package Student_ride_sharing.demand.controller;
 
 import Student_ride_sharing.demand.dto.JwtAuthResponse;
 import Student_ride_sharing.demand.dto.LoginDto;
@@ -16,14 +16,13 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto)
-    {
+    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
         return ResponseEntity.ok(authService.register(registerDto));
 
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto) {
 
         String token = authService.login(loginDto);
         JwtAuthResponse jwtAuthResponse = new JwtAuthResponse();

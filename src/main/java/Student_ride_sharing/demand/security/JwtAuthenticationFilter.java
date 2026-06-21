@@ -16,13 +16,20 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserDetailsService userDetailsService;
 
-    private UserDetailsService userDetailsService;
-
-    JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,UserDetailsService userDetailsService){
+    // Fixed constructor signature to cleanly match injection
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService){
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
+    }
+
+    // 🔥 CRUCIAL FIX: Prevents this filter from executing on H2 Console traffic paths
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.startsWith("/h2-console") || path.startsWith("/favicon.ico");
     }
 
     @Override
@@ -31,27 +38,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1️ Get header
         String header = request.getHeader("Authorization");
-
         String token = null;
         String username = null;
 
-        // 2️Extract token
         if (header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
         }
 
-        // 3️ Validate token
         if (token != null && jwtTokenProvider.validateToken(token)) {
-
-            // 4️ Get username
             username = jwtTokenProvider.getUserNameFromToken(token);
-
-            // 5⃣ Load user
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // 6️ Create authentication
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             userDetails,
@@ -59,11 +57,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities()
                     );
 
-            // 7️ 🔥 Set authentication
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        //  Continue request
         filterChain.doFilter(request, response);
     }
 }
