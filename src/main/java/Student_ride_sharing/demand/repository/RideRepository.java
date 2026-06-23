@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RideRepository extends JpaRepository<Ride, Long> {
@@ -29,4 +30,5 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
             @Param("vehicleType") String vehicleType,
             @Param("preferredTime") LocalDateTime preferredTime
     );
+    Optional<Ride> findById(Long id);
 }

@@ -4,6 +4,8 @@ import Student_ride_sharing.demand.entity.VehicleType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,4 +20,5 @@ public class RideResponseDto {
     private Integer occupiedSeats;
     private Integer availableSeats;
     private VehicleType vehicleType;
+    private BigDecimal price;
 }

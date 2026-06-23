@@ -1,6 +1,7 @@
 package Student_ride_sharing.demand.service.Impl;
 
 import Student_ride_sharing.demand.dto.CreateRideFromDemandDto;
+import Student_ride_sharing.demand.dto.RideRequestDetailedDto;
 import Student_ride_sharing.demand.dto.RideResponseDto;
 import Student_ride_sharing.demand.entity.*;
 import Student_ride_sharing.demand.repository.BookingRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -33,44 +35,53 @@ public class RideServiceImpl implements RideService {
     @Transactional
     public RideResponseDto acceptDemandAndCreateRide(CreateRideFromDemandDto dto) {
 
-        List<RideRequest> matchingRequests = rideRequestRepository.findMatchingRequestsForRideCreation(
+        List<RideRequest> matchingRequests = rideRequestRepository.findPendingRequestsByUsernamesAndCluster(
+                dto.getSelectedUsernames(),
                 dto.getSource(),
                 dto.getDestination(),
-                dto.getVehicleType().name(),
                 dto.getPreferredTime()
         );
 
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-
         User driver = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException("Authenticated driver profile record not found"));
 
-        Ride ride = new Ride();
-        ride.setDriver(driver);
-        ride.setSource(dto.getSource());
-        ride.setDestination(dto.getDestination());
-        ride.setVehicleType(dto.getVehicleType());
-        ride.setDepartureTime(dto.getPreferredTime());
-        ride.setTotalSeats(dto.getTotalSeats());
-        ride.setOccupiedSeats(0);
+        Ride ride;
 
-        Ride savedRide = rideRepository.save(ride);
+        if (dto.getExistingRideId() != null) {
+            ride = rideRepository.findById(dto.getExistingRideId())
+                    .orElseThrow(() -> new RuntimeException("Target active ride row not found"));
 
-        int currentOccupied = 0;
-
-        for (RideRequest request : matchingRequests) {
-            if (currentOccupied < dto.getTotalSeats()) {
-
-                request.setStatus(RequestStatus.FULFILLED);
-                rideRequestRepository.save(request);
-
-                bookingService.createAutomatedBookingForCluster(request.getStudent().getId(), savedRide);
-                currentOccupied++;
+            if (ride.getOccupiedSeats() + matchingRequests.size() > ride.getTotalSeats()) {
+                throw new RuntimeException("Cannot accept students. Selection exceeds total vehicle seat capacity.");
             }
+        } else {
+            ride = new Ride();
+            ride.setDriver(driver);
+            ride.setSource(dto.getSource());
+            ride.setDestination(dto.getDestination());
+            ride.setVehicleType(dto.getVehicleType());
+            ride.setDepartureTime(dto.getPreferredTime());
+            ride.setTotalSeats(dto.getTotalSeats());
+            ride.setOccupiedSeats(0);
+
+            ride.setPrice(dto.getPrice() != null ? dto.getPrice() : BigDecimal.ZERO);
+
+            ride = rideRepository.save(ride);
         }
 
-        savedRide.setOccupiedSeats(currentOccupied);
-        Ride finalRide = rideRepository.save(savedRide);
+        int currentOccupied = ride.getOccupiedSeats();
+
+        for (RideRequest request : matchingRequests) {
+            request.setStatus(RequestStatus.FULFILLED);
+            rideRequestRepository.save(request);
+
+           bookingService.createAutomatedBookingForCluster(request.getStudent().getId(), ride);
+            currentOccupied++;
+        }
+
+        ride.setOccupiedSeats(currentOccupied);
+        Ride finalRide = rideRepository.save(ride);
 
         RideResponseDto responseDto = modelMapper.map(finalRide, RideResponseDto.class);
         responseDto.setAvailableSeats(finalRide.getTotalSeats() - finalRide.getOccupiedSeats());
@@ -122,6 +133,24 @@ public class RideServiceImpl implements RideService {
                 .map(ride -> {
                     RideResponseDto dto = modelMapper.map(ride, RideResponseDto.class);
                     dto.setAvailableSeats(ride.getTotalSeats() - ride.getOccupiedSeats());
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Override
+    public List<RideRequestDetailedDto> getDetailedRequestsForCluster(String source, String destination, String preferredVehicle, String timeSlot) {
+
+        List<RideRequest> requests = rideRequestRepository.findDetailedRequestsInCluster(source, destination, preferredVehicle, timeSlot);
+
+        return requests.stream()
+                .map(request -> {
+                    RideRequestDetailedDto dto = modelMapper.map(request, RideRequestDetailedDto.class);
+                    // Manually populate fields from the User relationship object
+                    if (request.getStudent() != null) {
+                        dto.setStudentUsername(request.getStudent().getUsername());
+                        dto.setStudentName(request.getStudent().getName());
+                    }
                     return dto;
                 })
                 .toList();

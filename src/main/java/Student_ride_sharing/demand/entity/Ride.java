@@ -2,6 +2,8 @@ package Student_ride_sharing.demand.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -38,4 +40,7 @@ public class Ride {
     @Enumerated(EnumType.STRING)
     @Column(name = "vehicle_type", nullable = false)
     private VehicleType vehicleType;
+
+    @Column(name = "total_earnings", nullable = false)
+    private BigDecimal price = BigDecimal.ZERO;
 }

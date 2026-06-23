@@ -2,6 +2,7 @@ package Student_ride_sharing.demand.controller;
 
 import Student_ride_sharing.demand.dto.CreateRideFromDemandDto;
 import Student_ride_sharing.demand.dto.GroupedRequestDTO;
+import Student_ride_sharing.demand.dto.RideRequestDetailedDto;
 import Student_ride_sharing.demand.dto.RideResponseDto;
 import Student_ride_sharing.demand.service.RideRequestService;
 import Student_ride_sharing.demand.service.RideService;
@@ -27,7 +28,7 @@ public class DriverController {
         return ResponseEntity.ok(dashboardData);
     }
 
-    // 2. Driver clicks "Accept" on a group, creating a ride & FCFS bookings
+    // 2. Driver clicks "Accept" on a group
     @PostMapping("/rides/create-from-demand")
     public ResponseEntity<RideResponseDto> createRideFromDemand(@RequestBody CreateRideFromDemandDto dto) {
         RideResponseDto response = rideService.acceptDemandAndCreateRide(dto);
@@ -39,5 +40,15 @@ public class DriverController {
     public ResponseEntity<String> cancelRide(@PathVariable Long rideId) {
         rideService.cancelRideByDriver(rideId);
         return ResponseEntity.ok("Ride cancelled successfully. Stranded students have been returned to the pending pool.");
+    }
+    @GetMapping("/demands/cluster-details")
+    public ResponseEntity<List<RideRequestDetailedDto>> getClusterDetails(
+            @RequestParam String source,
+            @RequestParam String destination,
+            @RequestParam String preferredVehicle,
+            @RequestParam String timeSlot) {
+
+        List<RideRequestDetailedDto> details = rideService.getDetailedRequestsForCluster(source, destination, preferredVehicle, timeSlot);
+        return ResponseEntity.ok(details);
     }
 }

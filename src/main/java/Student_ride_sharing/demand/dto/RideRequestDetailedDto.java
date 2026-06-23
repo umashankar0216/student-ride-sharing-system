@@ -1,17 +1,17 @@
 package Student_ride_sharing.demand.dto;
 
-import Student_ride_sharing.demand.entity.VehicleType;
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class RideRequestDto {
-    private Long userId;
+public class RideRequestDetailedDto {
+    private Long id;
+    private String studentUsername;
+    private String studentName;
     private String source;
     private String destination;
     private LocalDateTime preferredTime;
-    private VehicleType preferredVehicle;
-    private BigDecimal price;
-}
+    private String preferredVehicle;
+    private String status;
+    private BigDecimal fareAmount; }

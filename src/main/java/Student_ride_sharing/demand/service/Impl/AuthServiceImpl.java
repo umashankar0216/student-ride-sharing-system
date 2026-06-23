@@ -110,15 +110,24 @@ public class AuthServiceImpl implements AuthService {
             Set<Roles> roles = new HashSet<>();
             if (dto.getRole() != null && dto.getRole().equalsIgnoreCase("DRIVER")) {
                 Roles driverRole = roleRepository.findByName("ROLE_DRIVER");
-                roles.add(driverRole);
+                if (driverRole != null) {
+                    roles.add(driverRole);
+                } else {
+                    throw new RuntimeException("ROLE_DRIVER not initialized in database.");
+                }
             } else {
                 // Default to STUDENT role
                 Roles studentRole = roleRepository.findByName("ROLE_STUDENT");
+                if (studentRole != null) {
+                    roles.add(studentRole);
+                } else {
+                    throw new RuntimeException("ROLE_STUDENT not initialized in database.");
+                }
             }
             user.setRoles(roles);
 
             User savedUser = userRepository.save(user);
-            return "the user registered succefully";
+            return "the user registered successfully";
         }
 
         @Override
