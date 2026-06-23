@@ -29,46 +29,111 @@ public class AuthServiceImpl implements AuthService {
     private JwtTokenProvider jwtTokenProvider;
 
 
+//
+//        @Override
+//        public String register(RegisterDto dto) {
+//            // Enforce uniqueness constraints
+//            if (userRepository.existsByUsername(dto.getUserName())) {
+//                throw new RuntimeException("Username is already taken!");
+//            }
+//            if (userRepository.existsByEmail(dto.getEmail())) {
+//                throw new RuntimeException("Email is already registered!");
+//            }
+//
+//            User user = new User();
+//            user.setName(dto.getName());
+//            user.setUsername(dto.getUserName());
+//            user.setEmail(dto.getEmail());
+//            user.setPassword(passwordEncoder.encode(dto.getPassword())); // Safely encrypt password string
+//
+//            // 🟢 Dynamic Role Assignment: Evaluates if registering as a DRIVER or passenger
+//            Set<Roles> roles = new HashSet<>();
+//            if (dto.getRole() != null && dto.getRole().equalsIgnoreCase("DRIVER")) {
+//                Roles driverRole = roleRepository.findByName("ROLE_DRIVER")
+//                        .orElseThrow(() -> new RuntimeException("ROLE_DRIVER not initialized in database."));
+//                roles.add(driverRole);
+//            } else {
+//                // Default to STUDENT role
+//                Roles studentRole = roleRepository.findByName("ROLE_STUDENT")
+//                        .orElseThrow(() -> new RuntimeException("ROLE_STUDENT not initialized in database."));
+//                roles.add(studentRole);
+//            }
+//            user.setRoles(roles);
+//
+//            User savedUser = userRepository.save(user);
+//            return "the user registered succefully";
+//        }
 
 
-    @Override
-    public String register(RegisterDto registerDto) {
+//    @Override
+//    public String register(RegisterDto registerDto) {
+//
+//
+//
+//        User user = new User();
+//        user.setUsername(registerDto.getUserName());
+//        user.setName(registerDto.getName());
+//        user.setEmail(registerDto.getEmail());
+//        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+//
+//        Set<Roles> roles = new HashSet<>();
+//
+//        Roles userrole = roleRepository.findByName("ROLE_STUDENT");
+//        roles.add(userrole);
+//
+//        user.setRoles(roles);
+//        userRepository.save(user);
+//
+//
+//
+//
+//        return " the user registered succefully";
+//    }
+
+        @Override
+        public String register(RegisterDto dto) {
+            // Enforce uniqueness constraints
+            if (userRepository.existsByUsername(dto.getUserName())) {
+                throw new RuntimeException("Username is already taken!");
+            }
+            if (userRepository.existsByEmail(dto.getEmail())) {
+                throw new RuntimeException("Email is already registered!");
+            }
+
+            User user = new User();
+            user.setName(dto.getName());
+            user.setUsername(dto.getUserName());
+            user.setEmail(dto.getEmail());
+            user.setPassword(passwordEncoder.encode(dto.getPassword())); // Safely encrypt password string
+
+            // 🟢 Dynamic Role Assignment: Evaluates if registering as a DRIVER or passenger
+            Set<Roles> roles = new HashSet<>();
+            if (dto.getRole() != null && dto.getRole().equalsIgnoreCase("DRIVER")) {
+                Roles driverRole = roleRepository.findByName("ROLE_DRIVER");
+                roles.add(driverRole);
+            } else {
+                // Default to STUDENT role
+                Roles studentRole = roleRepository.findByName("ROLE_STUDENT");
+            }
+            user.setRoles(roles);
+
+            User savedUser = userRepository.save(user);
+            return "the user registered succefully";
+        }
+
+        @Override
+        public String login(LoginDto loginDto) {
 
 
-
-        User user = new User();
-        user.setUsername(registerDto.getUserName());
-        user.setName(registerDto.getName());
-        user.setEmail(registerDto.getEmail());
-        user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-
-        Set<Roles> roles = new HashSet<>();
-
-        Roles userrole = roleRepository.findByName("ROLE_STUDENT");
-        roles.add(userrole);
-
-        user.setRoles(roles);
-        userRepository.save(user);
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    loginDto.getUserNameOrEmail(),
+                    loginDto.getPassword()
+            ));
 
 
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtTokenProvider.generateToken(authentication);
+            return token;
 
-
-        return " the user registered succefully";
+        }
     }
-
-    @Override
-    public String login(LoginDto loginDto) {
-
-
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getUserNameOrEmail(),
-                loginDto.getPassword()
-        ));
-
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtTokenProvider.generateToken(authentication);
-        return token;
-
-    }
-}
