@@ -396,28 +396,78 @@ const RideCard = ({ ride }) => {
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // TODO: Implement booking history API call
-  // useEffect(() => {
-  //   fetchMyBookings();
-  // }, []);
+  const fetchMyBookings = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await studentAPI.getMyBookings();
+      setBookings(data);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch your bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyBookings();
+  }, []);
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    try {
+      await studentAPI.cancelBooking(bookingId);
+      alert('Booking cancelled successfully!');
+      fetchMyBookings(); // Refresh the list
+    } catch (err) {
+      alert('Failed to cancel booking: ' + err.message);
+    }
+  };
 
   return (
     <div className="bookings-section">
       <Card>
         <h2>My Bookings</h2>
+
+        {error && <Alert type="error" message={error} />}
+
         {loading ? (
           <Loader message="Loading your bookings..." />
         ) : bookings.length > 0 ? (
-          <div className="bookings-list">
+          <div className="bookings-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
             {bookings.map((booking) => (
-              <div key={booking.id} className="booking-item">
-                {/* Booking details */}
+              <div key={booking.id} className="booking-item-card" style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', background: '#f9f9f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.9rem', color: '#555' }}>
+                  <strong style={{ fontSize: '1.1rem', color: '#000', display: 'block', marginBottom: '5px' }}>
+                    {booking.ride?.source} → {booking.ride?.destination}
+                  </strong>
+                  <p>🗓️ <strong>Departure:</strong> {new Date(booking.ride?.departureTime).toLocaleString()}</p>
+                  <p>🚗 <strong>Vehicle Type:</strong> {booking.ride?.vehicleType}</p>
+                  <p>💰 <strong>Fare:</strong> ₹{booking.ride?.price}</p>
+                  {/* 🟢 READS DRIVER INFO FROM REPPOSED ROOT LEVEL USER FIELD */}
+                  <p>👤 <strong>Driver:</strong> {booking.user?.name || booking.user?.username || 'Assigned Driver'}</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                  <span className={`status-badge ${booking.status.toLowerCase()}`} style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', background: '#e2fbe8', color: '#2e7d32' }}>
+                    {booking.status}
+                  </span>
+                  <Button 
+                    onClick={() => handleCancelBooking(booking.id)} 
+                    style={{ background: '#ff4d4f', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                  >
+                    Cancel Ride
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="empty-message">No bookings yet. Search and book a ride!</p>
+          <p className="empty-message" style={{ textAlign: 'center', color: '#777', padding: '20px 0' }}>
+            No bookings yet. Go to the "Search Rides" tab to find and book a trip!
+          </p>
         )}
       </Card>
     </div>
