@@ -1,0 +1,399 @@
+/* Components Styles */
+
+/* Authentication Styles */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card h1 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 28px;
+}
+
+.auth-subtitle {
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.auth-card form {
+  margin-bottom: 20px;
+}
+
+.auth-footer {
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.auth-footer a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Student Dashboard Styles */
+.student-dashboard {
+  animation: fadeIn 0.3s ease;
+}
+
+.dashboard-header {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-header h1 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.dashboard-header p {
+  color: #7f8c8d;
+  margin-bottom: 15px;
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 12px 20px;
+  background: white;
+  border: 2px solid #e0e6ed;
+  border-radius: 8px;
+  color: #7f8c8d;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.tab-btn.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.dashboard-content {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-card {
+  margin-bottom: 0;
+}
+
+.form-description {
+  color: #7f8c8d;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.search-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Rides List */
+.rides-list {
+  margin-top: 30px;
+}
+
+.rides-list h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.ride-card {
+  margin-bottom: 16px;
+}
+
+.ride-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.route {
+  flex: 1;
+}
+
+.source {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.destination {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.arrow {
+  color: #bdc3c7;
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.vehicle-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.vehicle-badge.car {
+  background: #d4f1ff;
+  color: #0066cc;
+}
+
+.vehicle-badge.auto {
+  background: #fff4d4;
+  color: #cc8800;
+}
+
+.vehicle-badge.bike {
+  background: #d4ffea;
+  color: #00aa66;
+}
+
+.ride-details {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail .label {
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+.detail .value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.empty-state {
+  background: #f8f9fa;
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+.empty-message {
+  padding: 20px;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+/* Driver Dashboard Styles */
+.driver-dashboard {
+  animation: fadeIn 0.3s ease;
+}
+
+.demand-section {
+  margin-top: 30px;
+}
+
+.demand-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.demand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.demand-card {
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.demand-card:hover {
+  transform: translateY(-4px);
+}
+
+.demand-route {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.route-info {
+  flex: 1;
+}
+
+.route-info .source {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.route-info .destination {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.demand-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e6ed;
+}
+
+.demand-details .detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.demand-details .icon {
+  font-size: 16px;
+}
+
+.demand-details .info {
+  color: #2c3e50;
+}
+
+.demand-footer {
+  margin-top: auto;
+}
+
+.note {
+  font-size: 12px;
+  color: #27ae60;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.ride-management-card {
+  margin-bottom: 16px;
+}
+
+.ride-management-card .ride-header {
+  margin-bottom: 12px;
+}
+
+.ride-management-card .ride-header h3 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.ride-info {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.ride-info p {
+  font-size: 13px;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+
+.ride-info strong {
+  color: #2c3e50;
+}
+
+/* Modal Demand Info */
+.modal-demand-info {
+  background: #f0f4f8;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.route-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.separator {
+  color: #bdc3c7;
+}
+
+.demand-students {
+  color: #7f8c8d;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .auth-card {
+    padding: 24px;
+  }
+
+  .search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .demand-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-header {
+    padding: 20px;
+  }
+}
