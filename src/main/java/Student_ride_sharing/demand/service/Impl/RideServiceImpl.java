@@ -100,23 +100,36 @@ public class RideServiceImpl implements RideService {
         for (Booking booking : activeBookings) {
             User student = booking.getStudent();
 
-            RideRequest fulfilledRequest = rideRequestRepository
-                    .findByStudentIdAndSourceAndDestinationAndStatus(
-                            student.getId(),
-                            ride.getSource(),
-                            ride.getDestination(),
-                            RequestStatus.FULFILLED
-                    );
+            // 🟢 FIXED: Fetch using the route-matching query to safely find the requests
+            List<RideRequest> fulfilledRequests = rideRequestRepository
+                    .findFulfilledRequestsForCancellation(student.getId(), ride.getSource(), ride.getDestination());
 
-            if (fulfilledRequest != null) {
-                fulfilledRequest.setStatus(RequestStatus.PENDING);
-                rideRequestRepository.save(fulfilledRequest);
+            for (RideRequest request : fulfilledRequests) {
+                request.setStatus(RequestStatus.PENDING); // Revert status cleanly back to pool
+                rideRequestRepository.save(request);     // Commit update to database
             }
 
+            // Delete the student's booking row
             bookingRepository.delete(booking);
         }
 
+        // Delete the driver's ride row from the table
         rideRepository.delete(ride);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RideResponseDto> getDriverRides() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Ride> driverRides = rideRepository.findByDriverUsername(currentUsername);
+
+        return driverRides.stream()
+                .map(ride -> {
+                    RideResponseDto dto = modelMapper.map(ride, RideResponseDto.class);
+                    dto.setAvailableSeats(ride.getTotalSeats() - ride.getOccupiedSeats());
+                    return dto;
+                })
+                .toList();
     }
 
     @Override

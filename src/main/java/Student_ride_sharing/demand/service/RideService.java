@@ -12,6 +12,7 @@ import java.util.List;
 public interface RideService {
     RideResponseDto acceptDemandAndCreateRide(CreateRideFromDemandDto dto);
     void cancelRideByDriver(Long rideId);
+    List<RideResponseDto> getDriverRides();
     List<RideResponseDto> searchRidesForStudent(String source, String destination, String vehicleType, LocalDateTime preferredTime);
     List<RideRequestDetailedDto> getDetailedRequestsForCluster(String source, String destination, String preferredVehicle, String timeSlot);
 }

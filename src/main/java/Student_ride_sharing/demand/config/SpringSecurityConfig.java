@@ -41,7 +41,7 @@ public class SpringSecurityConfig {
                     auth.requestMatchers("/api/auth/**").permitAll();
 
                     auth.requestMatchers("/api/students/**").permitAll();
-                    auth.requestMatchers("/api/drivers/**").hasRole("DRIVER");
+                    auth.requestMatchers("/api/drivers/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 // 🔴 CRUCIAL: Allow frames to load. Without this, H2 throws a 401/403 inside browsers

@@ -14,4 +14,4 @@ public class RideRequestDetailedDto {
     private LocalDateTime preferredTime;
     private String preferredVehicle;
     private String status;
-    private BigDecimal fareAmount; }
+    private BigDecimal price; }

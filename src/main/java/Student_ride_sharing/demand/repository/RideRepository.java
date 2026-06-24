@@ -18,17 +18,18 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     @Query(value = "SELECT r.* FROM rides r " +
             "WHERE r.source = :source " +
             "AND r.destination = :destination " +
-            "AND r.vehicle_type = :vehicleType " +
+            "AND (:vehicleType = 'ANY' OR r.vehicle_type = :vehicleType) " +
             "AND r.total_seats > r.occupied_seats " +
-            "AND TO_CHAR(r.departure_time, 'YYYY-MM-DD HH24:') = TO_CHAR(CAST(:preferredTime AS timestamp), 'YYYY-MM-DD HH24:') " +
-            "AND (CASE WHEN EXTRACT(MINUTE FROM r.departure_time) < 30 THEN '00' ELSE '30' END) = " +
-            "    (CASE WHEN EXTRACT(MINUTE FROM CAST(:preferredTime AS timestamp)) < 30 THEN '00' ELSE '30' END)",
-            nativeQuery = true)
+            "AND CAST(r.departure_time AS DATE) = CAST(:preferredTime AS DATE) " + // 🟢 FIXED: Filters cleanly by day
+            "ORDER BY r.departure_time ASC", nativeQuery = true)
     List<Ride> searchAvailableRides(
             @Param("source") String source,
             @Param("destination") String destination,
             @Param("vehicleType") String vehicleType,
             @Param("preferredTime") LocalDateTime preferredTime
     );
-    Optional<Ride> findById(Long id);
+
+
+    @Query("SELECT r FROM Ride r WHERE r.driver.username = :username")
+    List<Ride> findByDriverUsername(@Param("username") String username);
 }

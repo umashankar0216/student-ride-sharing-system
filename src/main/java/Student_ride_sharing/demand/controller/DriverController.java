@@ -41,6 +41,8 @@ public class DriverController {
         rideService.cancelRideByDriver(rideId);
         return ResponseEntity.ok("Ride cancelled successfully. Stranded students have been returned to the pending pool.");
     }
+
+    // 4. Get grouped requests for a selected demand cluster
     @GetMapping("/demands/cluster-details")
     public ResponseEntity<List<RideRequestDetailedDto>> getClusterDetails(
             @RequestParam String source,
@@ -50,5 +52,12 @@ public class DriverController {
 
         List<RideRequestDetailedDto> details = rideService.getDetailedRequestsForCluster(source, destination, preferredVehicle, timeSlot);
         return ResponseEntity.ok(details);
+    }
+
+    // 5. Get rides owned by current driver
+    @GetMapping("/rides")
+    public ResponseEntity<List<RideResponseDto>> getDriverRides() {
+        List<RideResponseDto> rides = rideService.getDriverRides();
+        return ResponseEntity.ok(rides);
     }
 }

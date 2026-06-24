@@ -81,12 +81,22 @@ public interface RideRequestRepository extends JpaRepository<RideRequest, Long> 
             "AND r.status = 'PENDING' " +
             "AND CONCAT(TO_CHAR(r.preferred_time, 'YYYY-MM-DD HH24:'), " +
             "   (CASE WHEN EXTRACT(MINUTE FROM r.preferred_time) < 30 THEN '00' ELSE '30' END)) = :timeSlot " +
-            "ORDER BY r.fare_amount DESC, r.created_at ASC",
+            "ORDER BY r.price DESC, r.created_at ASC", // 🟢 FIXED: Changed r.fare_amount to r.price
             nativeQuery = true)
     List<RideRequest> findDetailedRequestsInCluster(
             @Param("source") String source,
             @Param("destination") String destination,
             @Param("preferredVehicle") String preferredVehicle,
             @Param("timeSlot") String timeSlot
+    );
+
+    @Query("SELECT r FROM RideRequest r WHERE r.student.id = :studentId " +
+            "AND r.source = :source " +
+            "AND r.destination = :destination " +
+            "AND r.status = Student_ride_sharing.demand.entity.RequestStatus.FULFILLED")
+    List<RideRequest> findFulfilledRequestsForCancellation(
+            @Param("studentId") Long studentId,
+            @Param("source") String source,
+            @Param("destination") String destination
     );
 }

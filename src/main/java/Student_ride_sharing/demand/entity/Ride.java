@@ -41,6 +41,6 @@ public class Ride {
     @Column(name = "vehicle_type", nullable = false)
     private VehicleType vehicleType;
 
-    @Column(name = "total_earnings", nullable = false)
+    @Column(name = "price", nullable = false)
     private BigDecimal price = BigDecimal.ZERO;
 }

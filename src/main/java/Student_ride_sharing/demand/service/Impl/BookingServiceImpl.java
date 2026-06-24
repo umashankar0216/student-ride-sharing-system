@@ -1,13 +1,10 @@
 package Student_ride_sharing.demand.service.Impl;
 
 import Student_ride_sharing.demand.dto.BookingResponseDto;
-import Student_ride_sharing.demand.entity.Booking;
-import Student_ride_sharing.demand.entity.BookingStatus;
-import Student_ride_sharing.demand.entity.Ride;
-import Student_ride_sharing.demand.entity.User;
+import Student_ride_sharing.demand.entity.*;
 import Student_ride_sharing.demand.repository.BookingRepository;
 import Student_ride_sharing.demand.repository.RideRepository;
-import Student_ride_sharing.demand.repository.UserRepository; // Make sure this path is right
+import Student_ride_sharing.demand.repository.RideRequestRepository;
 import Student_ride_sharing.demand.repository.UserRepository;
 import Student_ride_sharing.demand.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +19,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
+    private final RideRequestRepository rideRequestRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -35,6 +33,20 @@ public class BookingServiceImpl implements BookingService {
 
         if (ride.getOccupiedSeats() >= ride.getTotalSeats()) {
             throw new RuntimeException("This ride is completely full!");
+        }
+
+        RideRequest studentRequest = rideRequestRepository.findByStudentIdAndSourceAndDestinationAndStatus(
+                studentId, ride.getSource(), ride.getDestination(), RequestStatus.PENDING
+        );
+
+        if (studentRequest != null) {
+            if (studentRequest.getPreferredVehicle() != VehicleType.ANY && studentRequest.getPreferredVehicle() != ride.getVehicleType()) {
+                throw new RuntimeException("Vehicle type mismatch! Your request prefers " + studentRequest.getPreferredVehicle()
+                        + " but this ride is operating with a " + ride.getVehicleType());
+            }
+
+            studentRequest.setStatus(RequestStatus.FULFILLED);
+            rideRequestRepository.save(studentRequest);
         }
 
         ride.setOccupiedSeats(ride.getOccupiedSeats() + 1);
@@ -60,9 +72,29 @@ public class BookingServiceImpl implements BookingService {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Match the user's specific request within the cluster
+        RideRequest studentRequest = rideRequestRepository.findByStudentIdAndSourceAndDestinationAndStatus(
+                studentId,
+                ride.getSource(),
+                ride.getDestination(),
+                RequestStatus.PENDING
+        );
+
+        if (studentRequest != null) {
+            if (studentRequest.getPreferredVehicle() != VehicleType.ANY && studentRequest.getPreferredVehicle() != ride.getVehicleType()) {
+                throw new RuntimeException("Vehicle type mismatch! Student prefers " + studentRequest.getPreferredVehicle()
+                        + " but this ride is a " + ride.getVehicleType());
+            }
+
+            // Sync request state so it drops out of the driver pending metrics map
+            studentRequest.setStatus(RequestStatus.FULFILLED);
+            rideRequestRepository.save(studentRequest);
+        }
+
+        // 🟢 FIXED: Writes and commits the missing relationship data row straight to PostgreSQL!
         Booking booking = new Booking();
         booking.setStudent(student);
-        booking.setRide(ride); // Uses the live ride object directly managed by RideServiceImpl
+        booking.setRide(ride);
         booking.setStatus(BookingStatus.CONFIRMED);
 
         bookingRepository.save(booking);
@@ -80,6 +112,18 @@ public class BookingServiceImpl implements BookingService {
         if (ride.getOccupiedSeats() > 0) {
             ride.setOccupiedSeats(ride.getOccupiedSeats() - 1);
             rideRepository.save(ride);
+        }
+
+        RideRequest fulfilledRequest = rideRequestRepository.findByStudentIdAndSourceAndDestinationAndStatus(
+                booking.getStudent().getId(),
+                ride.getSource(),
+                ride.getDestination(),
+                RequestStatus.FULFILLED
+        );
+
+        if (fulfilledRequest != null) {
+            fulfilledRequest.setStatus(RequestStatus.PENDING);
+            rideRequestRepository.save(fulfilledRequest);
         }
 
         bookingRepository.save(booking);
