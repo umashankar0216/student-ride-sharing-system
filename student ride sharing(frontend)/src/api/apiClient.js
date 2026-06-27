@@ -121,6 +121,15 @@ export const driverAPI = {
     apiCall(`/drivers/rides/${rideId}/cancel`, {
       method: 'PUT',
     }),
+
+    searchStudentDemands: (source, destination, preferredVehicle, timeSlot) =>
+        apiCall(
+            `/drivers/search-requests?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&preferredVehicle=${encodeURIComponent(preferredVehicle)}&date=${encodeURIComponent(timeSlot)}`,
+            {
+                method: 'GET',
+            }
+        ),
+  
 };
 
 export default apiCall;

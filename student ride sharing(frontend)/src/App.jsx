@@ -1,5 +1,69 @@
 
-import React from 'react';
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// import { AuthProvider } from './context/AuthContext';
+// import { Navigation, ProtectedRoute } from './components/Navigation';
+// import { Login, Register } from './pages/Auth';
+// import { StudentDashboard } from './pages/StudentDashboard';
+// // 🟢 SYNCHRONIZED: Points to your proper .jsx file location 
+// import { DriverDashboard, DriverRides } from './pages/DriverDashboard'; 
+// import './styles/global.css';
+
+// function App() {
+//   return (
+//     <AuthProvider>
+//       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+//         <div className="app">
+//           <Navigation />
+//           <div className="main-content">
+//             <Routes>
+//               {/* Public Routes */}
+//               <Route path="/login" element={<Login />} />
+//               <Route path="/register" element={<Register />} />
+
+//               {/* Student Routes */}
+//               <Route
+//                 path="/student/dashboard"
+//                 element={
+//                   <ProtectedRoute>
+//                     <StudentDashboard />
+//                   </ProtectedRoute>
+//                 }
+//               />
+
+//               {/* Driver Routes */}
+//               <Route
+//                 path="/driver/dashboard"
+//                 element={
+//                   <ProtectedRoute>
+//                     <DriverDashboard />
+//                   </ProtectedRoute>
+//                 }
+//               />
+              
+//               {/* Standalone Route for Direct Rides Navigation Link */}
+//               <Route
+//                 path="/driver/rides"
+//                 element={
+//                   <ProtectedRoute>
+//                     <DriverRides />
+//                   </ProtectedRoute>
+//                 }
+//               />
+
+//               {/* Fallback Catch-all Redirects */}
+//               <Route path="/" element={<Navigate to="/login" replace />} />
+//               <Route path="*" element={<Navigate to="/login" replace />} />
+//             </Routes>
+//           </div>
+//         </div>
+//       </Router>
+//     </AuthProvider>
+//   );
+// }
+
+// export default App;
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navigation, ProtectedRoute } from './components/Navigation';
@@ -10,6 +74,9 @@ import { DriverDashboard, DriverRides } from './pages/DriverDashboard';
 import './styles/global.css';
 
 function App() {
+  // 🟢 LIFTED STATE CONTEXT: Shared tracking state across dashboard router hooks
+  const [activeTrackingRideId, setActiveTrackingRideId] = useState(null);
+
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -36,7 +103,11 @@ function App() {
                 path="/driver/dashboard"
                 element={
                   <ProtectedRoute>
-                    <DriverDashboard />
+                    {/* 🟢 PASS tracking context states down into dashboard tabs */}
+                    <DriverDashboard 
+                      activeTrackingRideId={activeTrackingRideId}
+                      setActiveTrackingRideId={setActiveTrackingRideId}
+                    />
                   </ProtectedRoute>
                 }
               />
@@ -46,7 +117,11 @@ function App() {
                 path="/driver/rides"
                 element={
                   <ProtectedRoute>
-                    <DriverRides />
+                    {/* 🟢 PASS tracking context states down into direct route view */}
+                    <DriverRides 
+                      activeTrackingRideId={activeTrackingRideId}
+                      setActiveTrackingRideId={setActiveTrackingRideId}
+                    />
                   </ProtectedRoute>
                 }
               />
