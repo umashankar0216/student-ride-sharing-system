@@ -1,6 +1,7 @@
 package Student_ride_sharing.demand.service.Impl;
 
 import Student_ride_sharing.demand.dto.BookingResponseDto;
+import Student_ride_sharing.demand.dto.UserResponseDto;
 import Student_ride_sharing.demand.entity.*;
 import Student_ride_sharing.demand.repository.BookingRepository;
 import Student_ride_sharing.demand.repository.RideRepository;
@@ -9,8 +10,11 @@ import Student_ride_sharing.demand.repository.UserRepository;
 import Student_ride_sharing.demand.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -113,19 +117,50 @@ public class BookingServiceImpl implements BookingService {
             ride.setOccupiedSeats(ride.getOccupiedSeats() - 1);
             rideRepository.save(ride);
         }
+//
+//        RideRequest fulfilledRequest = rideRequestRepository.findByStudentIdAndSourceAndDestinationAndStatus(
+//                booking.getStudent().getId(),
+//                ride.getSource(),
+//                ride.getDestination(),
+//                RequestStatus.FULFILLED
+//        );
+//
+//        if (fulfilledRequest != null) {
+//            fulfilledRequest.setStatus(RequestStatus.PENDING);
+//            rideRequestRepository.save(fulfilledRequest);
+//        }
 
-        RideRequest fulfilledRequest = rideRequestRepository.findByStudentIdAndSourceAndDestinationAndStatus(
-                booking.getStudent().getId(),
-                ride.getSource(),
-                ride.getDestination(),
-                RequestStatus.FULFILLED
-        );
+        bookingRepository.delete(booking);
+    }
 
-        if (fulfilledRequest != null) {
-            fulfilledRequest.setStatus(RequestStatus.PENDING);
-            rideRequestRepository.save(fulfilledRequest);
-        }
+    // Inside BookingServiceImpl.java -> getStudentBookings() method
 
-        bookingRepository.save(booking);
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingResponseDto> getStudentBookings() {
+        String currentUsername = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication().getName();
+
+        List<Booking> bookings = bookingRepository.findStudentActiveBookings(currentUsername, BookingStatus.CONFIRMED);
+
+        return bookings.stream()
+                .map(booking -> {
+                    BookingResponseDto dto = modelMapper.map(booking, BookingResponseDto.class);
+
+                    if (booking.getRide() != null && dto.getRide() != null) {
+                        // Calculate dynamic available seats
+                        dto.getRide().setAvailableSeats(booking.getRide().getTotalSeats() - booking.getRide().getOccupiedSeats());
+                    }
+
+                    // 🟢 SAFE FALLBACK: If you don't have driverName in your Ride DTO,
+                    // put the Driver's UserResponseDto inside the parent 'user' field cleanly:
+                    if (booking.getRide() != null && booking.getRide().getDriver() != null) {
+                        UserResponseDto driverDto = modelMapper.map(booking.getRide().getDriver(), UserResponseDto.class);
+                        dto.setUser(driverDto); // Overwrites the root user node with the active driver details
+                    }
+
+                    return dto;
+                })
+                .toList();
     }
 }

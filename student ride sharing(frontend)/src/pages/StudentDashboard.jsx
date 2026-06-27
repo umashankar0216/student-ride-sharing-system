@@ -1,12 +1,16 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { studentAPI } from '../api/apiClient';
-import { Input, Select, Button, Alert, Loader, Card } from '../components/UI';
+import { Input, Select, Button, Alert, Loader, Card,LocationInput,RouteMap } from '../components/UI';
+// 1. Import your newly built LocationIQ Autocomplete Search Component
+// Change this line (Line 403):
+
 import '../styles/student.css';
 
 export const StudentDashboard = () => {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('submit-request');
+  const { user } = useAuth(); 
+  const [activeTab, setActiveTab] = useState('submit-request'); 
 
   return (
     <div className="student-dashboard">
@@ -118,23 +122,28 @@ const SubmitRideRequest = () => {
         {message && <Alert type="success" message={message} />}
 
         <form onSubmit={handleSubmit}>
-          <Input
-            label="Pickup Location *"
-            name="source"
-            value={formData.source}
-            onChange={handleChange}
-            placeholder="e.g., Main Campus, Hostel B"
-            required
-          />
+          
+          {/* 2. Swapped text input out for the LocationIQ search menu */}
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem' }}>Pickup Location *</label>
+            <LocationInput
+              placeholder="Search for college plaza, hostel, etc..."
+              onLocationSelect={(addressString) => 
+                setFormData((prev) => ({ ...prev, source: addressString }))
+              }
+            />
+          </div>
 
-          <Input
-            label="Destination *"
-            name="destination"
-            value={formData.destination}
-            onChange={handleChange}
-            placeholder="e.g., City Center, Airport"
-            required
-          />
+          {/* 3. Swapped destination text field out for LocationIQ */}
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem' }}>Destination *</label>
+            <LocationInput
+              placeholder="Search for drop-off destination..."
+              onLocationSelect={(addressString) => 
+                setFormData((prev) => ({ ...prev, destination: addressString }))
+              }
+            />
+          </div>
 
           <Input
             label="Preferred Date & Time *"
@@ -187,7 +196,7 @@ const SearchRides = () => {
     preferredTime: '',
   });
   const [rides, setRides] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // This sets up 'setLoading'
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
 
@@ -196,36 +205,6 @@ const SearchRides = () => {
     setSearchParams((prev) => ({ ...prev, [name]: value }));
   };
 
-  // const handleSearch = async (e) => {
-  //   e.preventDefault();
-  //   setError('');
-  //   setRides([]);
-
-  //   if (!searchParams.source || !searchParams.destination || !searchParams.preferredTime) {
-  //     setError('Please fill all search fields');
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   setSearched(true);
-  //   try {
-  //     const results = await studentAPI.searchRides(
-  //       searchParams.source,
-  //       searchParams.destination,
-  //       searchParams.vehicleType,
-  //       new Date(searchParams.preferredTime).toISOString()
-  //     );
-  //     setRides(results);
-
-  //     if (results.length === 0) {
-  //       setError('No rides found for your criteria. Try submitting a request!');
-  //     }
-  //   } catch (err) {
-  //     setError(err.message || 'Failed to search rides');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleSearch = async (e) => {
     e.preventDefault();
     setError('');
@@ -236,15 +215,13 @@ const SearchRides = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // 🟢 CHANGED FROM loading(true) TO setLoading(true)
     setSearched(true);
     try {
       const results = await studentAPI.searchRides(
         searchParams.source,
         searchParams.destination,
         searchParams.vehicleType,
-        // 🟢 FIXED: Pass the local string string directly (e.g., "2026-06-24T08:30")
-        // This keeps timezone conversion logic from accidentally hiding active rides!
         searchParams.preferredTime 
       );
       setRides(results);
@@ -267,23 +244,26 @@ const SearchRides = () => {
         {error && <Alert type="error" message={error} />}
 
         <form onSubmit={handleSearch} className="search-form">
-          <Input
-            label="From *"
-            name="source"
-            value={searchParams.source}
-            onChange={handleChange}
-            placeholder="Pickup location"
-            required
-          />
+          
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem' }}>From *</label>
+            <LocationInput
+              placeholder="Pickup location"
+              onLocationSelect={(addressString) => 
+                setSearchParams((prev) => ({ ...prev, source: addressString }))
+              }
+            />
+          </div>
 
-          <Input
-            label="To *"
-            name="destination"
-            value={searchParams.destination}
-            onChange={handleChange}
-            placeholder="Destination"
-            required
-          />
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.9rem' }}>To *</label>
+            <LocationInput
+              placeholder="Destination"
+              onLocationSelect={(addressString) => 
+                setSearchParams((prev) => ({ ...prev, destination: addressString }))
+              }
+            />
+          </div>
 
           <Input
             label="Date & Time *"
@@ -393,10 +373,14 @@ const RideCard = ({ ride }) => {
   );
 };
 
+
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // 🟢 NEW STATE: Tracks which ride the student is currently watching
+  const [activeTrackingRideId, setActiveTrackingRideId] = useState(null);
 
   const fetchMyBookings = async () => {
     try {
@@ -420,9 +404,20 @@ const MyBookings = () => {
     try {
       await studentAPI.cancelBooking(bookingId);
       alert('Booking cancelled successfully!');
-      fetchMyBookings(); // Refresh the list
+      
+      // Clear tracking if they cancel the ride they are watching
+      setActiveTrackingRideId(null); 
+      fetchMyBookings(); 
     } catch (err) {
       alert('Failed to cancel booking: ' + err.message);
+    }
+  };
+
+  const toggleTracking = (rideId) => {
+    if (activeTrackingRideId === rideId) {
+      setActiveTrackingRideId(null); // Close the map
+    } else {
+      setActiveTrackingRideId(rideId); // Open the map and connect to WebSocket
     }
   };
 
@@ -437,32 +432,68 @@ const MyBookings = () => {
           <Loader message="Loading your bookings..." />
         ) : bookings.length > 0 ? (
           <div className="bookings-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px' }}>
-            {bookings.map((booking) => (
-              <div key={booking.id} className="booking-item-card" style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', background: '#f9f9f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '0.9rem', color: '#555' }}>
-                  <strong style={{ fontSize: '1.1rem', color: '#000', display: 'block', marginBottom: '5px' }}>
-                    {booking.ride?.source} → {booking.ride?.destination}
-                  </strong>
-                  <p>🗓️ <strong>Departure:</strong> {new Date(booking.ride?.departureTime).toLocaleString()}</p>
-                  <p>🚗 <strong>Vehicle Type:</strong> {booking.ride?.vehicleType}</p>
-                  <p>💰 <strong>Fare:</strong> ₹{booking.ride?.price}</p>
-                  {/* 🟢 READS DRIVER INFO FROM REPPOSED ROOT LEVEL USER FIELD */}
-                  <p>👤 <strong>Driver:</strong> {booking.user?.name || booking.user?.username || 'Assigned Driver'}</p>
-                </div>
+            {bookings.map((booking) => {
+              const isTracking = activeTrackingRideId === booking.ride?.id;
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
-                  <span className={`status-badge ${booking.status.toLowerCase()}`} style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', background: '#e2fbe8', color: '#2e7d32' }}>
-                    {booking.status}
-                  </span>
-                  <Button 
-                    onClick={() => handleCancelBooking(booking.id)} 
-                    style={{ background: '#ff4d4f', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    Cancel Ride
-                  </Button>
+              return (
+                <div key={booking.id} className="booking-item-card" style={{ border: isTracking ? '2px solid #3498db' : '1px solid #ddd', padding: '15px', borderRadius: '8px', background: '#f9f9f9', transition: 'all 0.3s ease' }}>
+                  
+                  {/* Top Info Section */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ fontSize: '0.9rem', color: '#555' }}>
+                      <strong style={{ fontSize: '1.1rem', color: '#000', display: 'block', marginBottom: '5px' }}>
+                        {booking.ride?.source} → {booking.ride?.destination}
+                      </strong>
+                      <p>🗓️ <strong>Departure:</strong> {new Date(booking.ride?.departureTime).toLocaleString()}</p>
+                      <p>🚗 <strong>Vehicle Type:</strong> {booking.ride?.vehicleType}</p>
+                      <p>💰 <strong>Fare:</strong> ₹{booking.ride?.price}</p>
+                      <p>👤 <strong>Driver:</strong> {booking.user?.name || booking.user?.username || 'Assigned Driver'}</p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+                      <span className={`status-badge ${booking.status.toLowerCase()}`} style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold', background: booking.status === 'CONFIRMED' ? '#e2fbe8' : '#ffebee', color: booking.status === 'CONFIRMED' ? '#2e7d32' : '#c62828' }}>
+                        {booking.status}
+                      </span>
+                      
+                      {/* 🟢 NEW TRACKING BUTTON */}
+                      {booking.status === 'CONFIRMED' && (
+                        <Button 
+                          onClick={() => toggleTracking(booking.ride?.id)}
+                          style={{ background: isTracking ? '#e74c3c' : '#3498db', padding: '6px 12px', fontSize: '0.9rem' }}
+                        >
+                          {isTracking ? '🛑 Close Map' : '🗺️ Track Live Ride'}
+                        </Button>
+                      )}
+
+                      <Button 
+                        onClick={() => handleCancelBooking(booking.id)} 
+                        style={{ background: '#ff4d4f', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        Cancel Ride
+                      </Button>
+                    </div>
+                  </div>
+
+                {/* Inside StudentDashboard.jsx -> MyBookings */}
+{isTracking && (
+  <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dashed #ccc' }}>
+    <h4 style={{ marginBottom: '10px', color: '#2c3e50' }}>📡 Live Driver Telemetry</h4>
+    
+    <RouteMap 
+      sourceText={booking.ride.source} 
+      destinationText={booking.ride.destination} 
+      rideId={booking.ride.id}
+      
+      // 🟢 THIS IS THE MAGIC WORD! It tells the map to act as a STOMP Receiver.
+      role="STUDENT" 
+    />
+    
+  </div>
+)}
+
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="empty-message" style={{ textAlign: 'center', color: '#777', padding: '20px 0' }}>

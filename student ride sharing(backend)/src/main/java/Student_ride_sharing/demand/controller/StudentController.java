@@ -57,4 +57,9 @@ public class StudentController {
         List<RideResponseDto> availableRides = rideService.searchRidesForStudent(source, destination, vehicleType, preferredTime);
         return ResponseEntity.ok(availableRides);
     }
+        @GetMapping("/bookings")
+        public ResponseEntity<List<BookingResponseDto>> getMyBookings() {
+            List<BookingResponseDto> studentHistory = bookingService.getStudentBookings();
+            return ResponseEntity.ok(studentHistory);
+        }
 }

@@ -39,6 +39,8 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     // Permit ALL requests to the console root and any sub-resource files (css, js, etc.)
                     auth.requestMatchers("/api/auth/**").permitAll();
+                    auth.requestMatchers("/ws-tracking/**").permitAll();
+                    auth.requestMatchers("/h2-console/**", "/favicon.ico").permitAll();
 
                     auth.requestMatchers("/api/students/**").permitAll();
                     auth.requestMatchers("/api/drivers/**").permitAll();

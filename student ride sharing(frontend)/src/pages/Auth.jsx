@@ -212,7 +212,7 @@ export const Login = () => {
       if (credentials.role === 'ROLE_DRIVER') {
         navigate('/driver/dashboard');
       } else {
-        navigate('/student/dashboard');
+        navigate('/student/dashboard')
       }
     } catch (err) {
       setServerError(err.message || 'Login failed');
